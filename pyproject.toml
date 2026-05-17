@@ -1,0 +1,13 @@
+[project]
+name = "sweep"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.9.*"
+dependencies = [
+    "numpy>=1.21",
+    "openpyxl>=3.1.5",
+    "pandas>=1.3",
+    "pysweepme>=1.5.8.2",
+    "pyvisa>=1.13.0",
+]
