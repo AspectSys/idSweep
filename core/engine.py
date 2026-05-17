@@ -105,6 +105,7 @@ class SweepRunner:
             raise RuntimeError("Resource manager is not initialized.")
 
         smu_resource = self.resource_manager.open_resource(self.spec.hardware.smu_mainframe)
+        smu_resource.clear()  # GPIB Device Clear: flushes 4200 state between tests
         shared_port = PortWrapper(
             smu_resource,
             write_termination=self._SMU_WRITE_TERMINATION,
@@ -132,6 +133,7 @@ class SweepRunner:
             }
         )
         if initialize_instrument:
+            smu.device_communication.pop(smu.identifier, None)
             smu.connect()
             smu.initialize()
         else:

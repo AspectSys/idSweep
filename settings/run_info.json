@@ -1,0 +1,11 @@
+﻿{
+    "product_name": "DF",
+    "operator": "aS Staff",
+    "wafer_id": "01",
+    "lot_id": "T0001",
+    "tester_device_pos_x": "1",
+    "tester_device_pos_y": "1",
+    "temperature": "21.0",
+    "device_no": "1",
+    "test_station": "aS 2"
+}

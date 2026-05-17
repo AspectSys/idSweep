@@ -54,15 +54,19 @@ class SeriesResistanceRunner(SweepRunner):
                 f"(v1={v1:.6g} V, i1={i1:.6g} A, v2={v2:.6g} V, i2={i2:.6g} A)"
             )
 
+        lbl = primary.label
         self.results.append(
             {
                 "Timestamp": datetime.now().isoformat(timespec="seconds"),
                 "Measured Pin": measured_pin,
                 "Matrix Config": normalized,
-                "V1_V": v1,
-                "I1_A": i1,
-                "V2_V": v2,
-                "I2_A": i2,
-                "Rs_Ohm": rs,
+                f"{lbl} Channel": primary.smu,
+                f"{lbl} Target A1": primary.sweep_profile[0].voltage,
+                f"{lbl} Measured V1": v1,
+                f"{lbl} Current A1": i1,
+                f"{lbl} Target A2": primary.sweep_profile[1].voltage,
+                f"{lbl} Measured V2": v2,
+                f"{lbl} Current A2": i2,
+                "Rs Ohm": rs,
             }
         )

@@ -1,0 +1,47 @@
+Product Name	DF
+Time	12.05.26 14:53:51
+Operator Name	aS Staff
+Test Station	aS 2
+LOT ID	VP03891
+Wafer ID	23
+Tester Device Pos X	9
+Tester Device Pos Y	11
+Temperature	21.0
+Device No	1
+0101	Guard Leakage 0V [nA]	1	1	0.0	0.011567959999999999	0.1
+0102	Guard Leakage 2.5V [nA]	1	1	0.0	0.011522656666666667	0.1
+0103	Pin OUT1 Dark Current -1.25V [mA]	8	0	0.0	-1.971326e-11	0.1
+0104	Pin OUT1 Dark Current 2.5V [pA]	8	0	0.0	-0.005065447	0.1
+0105	Pin OUT1 Series Resistance [Ohm]	5	0	0.0	-232938.0266558962	0.1
+0106	Pin OUT1 Capacitance [pF]	6	0	0.0	0.71	0.1
+0203	Pin IN2 Dark Current -1.25V [mA]	1	1	0.0	4.071602e-11	0.1
+0204	Pin IN2 Dark Current 2.5V [pA]	1	1	0.0	0.018691700000000002	0.1
+0205	Pin IN2 Series Resistance [Ohm]	5	0	0.0	-240783.206072544	0.1
+0206	Pin IN2 Capacitance [pF]	6	0	0.0	0.6499999999999999	0.1
+0303	Pin IN3 Dark Current -1.25V [mA]	8	0	0.0	-2.678033e-12	0.1
+0304	Pin IN3 Dark Current 2.5V [pA]	1	1	0.0	0.003406075	0.1
+0305	Pin IN3 Series Resistance [Ohm]	5	0	0.0	-484021.22612200276	0.1
+0306	Pin IN3 Capacitance [pF]	6	0	0.0	0.71	0.1
+0403	Pin OUT4 Dark Current -1.25V [mA]	8	0	0.0	-8.61938e-12	0.1
+0404	Pin OUT4 Dark Current 2.5V [pA]	1	1	0.0	0.016279079999999998	0.1
+0405	Pin OUT4 Series Resistance [Ohm]	5	0	0.0	-277380.2487159135	0.1
+0406	Pin OUT4 Capacitance [pF]	6	0	0.0	0.69	0.1
+0503	Pin OUT5 Dark Current -1.25V [mA]	1	1	0.0	2.029871e-12	0.1
+0504	Pin OUT5 Dark Current 2.5V [pA]	1	1	0.0	0.01269579	0.1
+0505	Pin OUT5 Series Resistance [Ohm]	5	0	0.0	-300889.68634763145	0.1
+0506	Pin OUT5 Capacitance [pF]	6	0	0.0	0.66	0.1
+0603	Pin IN6 Dark Current -1.25V [mA]	8	0	0.0	-2.217632e-11	0.1
+0604	Pin IN6 Dark Current 2.5V [pA]	1	1	0.0	0.03826136	0.1
+0605	Pin IN6 Series Resistance [Ohm]	5	0	0.0	-212541.1109139941	0.1
+0606	Pin IN6 Capacitance [pF]	6	0	0.0	0.6699999999999999	0.1
+0703	Pin IN7 Dark Current -1.25V [mA]	1	1	0.0	3.0012210000000004e-11	0.1
+0704	Pin IN7 Dark Current 2.5V [pA]	8	0	0.0	-0.02509253	0.1
+0705	Pin IN7 Series Resistance [Ohm]	5	0	0.0	-288443.95286913606	0.1
+0706	Pin IN7 Capacitance [pF]	6	0	0.0	0.66	0.1
+0803	Pin OUT8 Dark Current -1.25V [mA]	8	0	0.0	-6.806784e-12	0.1
+0804	Pin OUT8 Dark Current 2.5V [pA]	1	1	0.0	0.0054032839999999995	0.1
+0805	Pin OUT8 Series Resistance [Ohm]	5	0	0.0	-203901.02438962576	0.1
+0806	Pin OUT8 Capacitance [pF]	6	0	0.0	0.69	0.1
+Total Time	0:12:12
+Soft Bin	8
+Pass	0
