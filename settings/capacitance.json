@@ -1,0 +1,17 @@
+{
+  "test_name": "Capacitance",
+  "excel_sheet": "Capacitance",
+  "instruments": {
+    "switch_matrix": "GPIB0::18::INSTR",
+    "lcr_meter": "GPIB0::15::INSTR",
+    "matrix_settling_s": 0.3,
+    "workbook": "settings/ParameterMatrix_DF.xlsx"
+  },
+  "lcr": {
+    "frequency": 100000000.0,
+    "integration": "10 /s",
+    "range": "Auto",
+    "trigger": "One-shot, talk",
+    "bias_voltage": 0.0
+  }
+}

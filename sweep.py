@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
-
-from core.channel import load_measurement_spec
-from core.engine import SweepRunner
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,13 +16,38 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    spec = load_measurement_spec(args.config)
-    SweepRunner(
-        spec,
-        dry_run=args.dry_run,
-        limit_rows=args.limit_rows,
-        output_path=args.output,
-    ).run()
+    with open(args.config, encoding="utf-8") as f:
+        raw = json.load(f)
+
+    if "lcr" in raw:
+        from core.lcr_channel import load_lcr_spec
+        from core.lcr_engine import LCRRunner
+        spec = load_lcr_spec(args.config)
+        LCRRunner(
+            spec,
+            dry_run=args.dry_run,
+            limit_rows=args.limit_rows,
+            output_path=args.output,
+        ).run()
+    elif "series_resistance" in raw:
+        from core.series_resistance_engine import SeriesResistanceRunner, load_series_resistance_spec
+        spec = load_series_resistance_spec(args.config)
+        SeriesResistanceRunner(
+            spec,
+            dry_run=args.dry_run,
+            limit_rows=args.limit_rows,
+            output_path=args.output,
+        ).run()
+    else:
+        from core.channel import load_measurement_spec
+        from core.engine import SweepRunner
+        spec = load_measurement_spec(args.config)
+        SweepRunner(
+            spec,
+            dry_run=args.dry_run,
+            limit_rows=args.limit_rows,
+            output_path=args.output,
+        ).run()
 
 
 

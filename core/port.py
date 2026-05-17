@@ -36,15 +36,19 @@ class DryRunPort:
         self.timeout = 10000
         self.write_termination = ""
         self.read_termination = None
+        self._last_write: str = ""
 
     def clear(self) -> None:
         print(f"[DRY-RUN] {self.name}: clear")
 
     def write(self, command: str) -> None:
         print(f"[DRY-RUN] {self.name}: write {command}")
+        self._last_write = command
 
     def read(self) -> str:
         print(f"[DRY-RUN] {self.name}: read")
+        if self._last_write.startswith("B"):
+            return "NTPK0.000E+00,0.000E+00,0.000E+00"
         return ""
 
     def query(self, command: str) -> str:
