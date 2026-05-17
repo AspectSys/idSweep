@@ -34,19 +34,11 @@ class SweepRunner:
         dry_run: bool = False,
         limit_rows: Optional[int] = None,
         output_path: Optional[Path] = None,
-        matrix_only: bool = False,
-        smu_config_only: bool = False,
-        smu_zero_only: bool = False,
-        smu_readback_only: bool = False,
     ) -> None:
         self.spec = spec
         self.dry_run = dry_run
         self.limit_rows = limit_rows
         self.output_path = output_path
-        self.matrix_only = matrix_only
-        self.smu_config_only = smu_config_only
-        self.smu_zero_only = smu_zero_only
-        self.smu_readback_only = smu_readback_only
 
         self.resource_manager = None
         self.matrix = None
@@ -58,18 +50,6 @@ class SweepRunner:
     # ------------------------------------------------------------------ #
 
     def run(self) -> Path:
-        if self.smu_config_only:
-            self._run_smu_config_only()
-            return Path()
-
-        if self.smu_zero_only:
-            self._run_smu_zero_only()
-            return Path()
-
-        if self.smu_readback_only:
-            self._run_smu_readback_only()
-            return Path()
-
         rows = load_parameter_rows(
             self.spec.workbook_path,
             self.spec.excel_sheet,
@@ -85,10 +65,6 @@ class SweepRunner:
 
         print(f"Loaded {len(rows)} row(s) from {self.spec.workbook_path} [{self.spec.excel_sheet}]")
 
-        if self.matrix_only:
-            self._run_matrix_only(rows)
-            return Path()
-
         self._connect_instruments()
         try:
             for row_index, row in enumerate(rows, start=1):
@@ -100,62 +76,6 @@ class SweepRunner:
         pd.DataFrame(self.results).to_csv(output_path, index=False)
         print(f"Saved {len(self.results)} measurement row(s) to {output_path}")
         return output_path
-
-    # ------------------------------------------------------------------ #
-    #  Diagnostic modes                                                    #
-    # ------------------------------------------------------------------ #
-
-    def _run_matrix_only(self, rows: List[Dict[str, str]]) -> None:
-        print("Matrix-only mode: SMUs will not be connected or configured.")
-        self._connect_matrix()
-        try:
-            for row_index, row in enumerate(rows, start=1):
-                measured_pin = row["Measured Pin"]
-                matrix_config = normalize_matrix_config(row["Matrix Config"])
-                print(f"\nMatrix row {row_index}: pin={measured_pin}, matrix={matrix_config}")
-                self._apply_matrix_config(matrix_config)
-        finally:
-            self._safe_shutdown()
-        print("Matrix-only check complete. No SMU steps or measurements were executed.")
-
-    def _run_smu_config_only(self) -> None:
-        labels = ", ".join(f"{ch.label} {ch.smu}" for ch in self.spec.channels)
-        print(f"SMU-config-only mode: configuring {labels}.")
-        self._init_resource_manager()
-        try:
-            self._connect_smus()
-            print(f"SMU configuration check complete for {labels}.")
-        finally:
-            self._safe_shutdown()
-
-    def _run_smu_zero_only(self) -> None:
-        labels = ", ".join(f"{ch.label} {ch.smu}" for ch in self.spec.channels)
-        print(f"SMU-zero-only mode: applying 0 V to {labels}.")
-        self._init_resource_manager()
-        try:
-            self._connect_smus()
-            for ch in self.spec.channels:
-                self._apply_voltage(ch, 0.0)
-            self._wait(1.0, "SMU zero-voltage stability check")
-            print("SMU zero-voltage check complete.")
-        finally:
-            self._safe_shutdown()
-
-    def _run_smu_readback_only(self) -> None:
-        labels = ", ".join(f"{ch.label} {ch.smu}" for ch in self.spec.channels)
-        print(f"SMU-readback-only mode: testing TV/TI readback for {labels}.")
-        self._init_resource_manager()
-        try:
-            self._connect_smus()
-            for ch in self.spec.channels:
-                self._apply_voltage(ch, 0.0)
-            self._wait(1.0, "SMU readback stability check")
-            for ch in self.spec.channels:
-                self._read_smu_value(ch, "voltage")
-                self._read_smu_value(ch, "current")
-            print("SMU readback check complete.")
-        finally:
-            self._safe_shutdown()
 
     # ------------------------------------------------------------------ #
     #  Connection                                                          #
@@ -354,4 +274,6 @@ class SweepRunner:
     def _default_output_path(self) -> Path:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         prefix = self.spec.test_name.replace(" ", "")
-        return Path(f"{prefix}_{timestamp}.csv")
+        output_dir = Path("results")
+        output_dir.mkdir(exist_ok=True)
+        return output_dir / f"{prefix}_{timestamp}.csv"
