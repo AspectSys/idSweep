@@ -6,11 +6,11 @@ from pathlib import Path
 from core.channel import load_measurement_spec
 from core.engine import SweepRunner
 
-_DEFAULT_CONFIG = Path("settings/guard_leakage.json")
+_DEFAULT_CONFIG = Path("settings/dark_current.json")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the guard leakage test.")
+    parser = argparse.ArgumentParser(description="Run the dark current test.")
     parser.add_argument("--config", type=Path, default=_DEFAULT_CONFIG, help="JSON config file.")
     parser.add_argument("--workbook", type=Path, default=None, help="Override Excel workbook path from config.")
     parser.add_argument("--output", type=Path, default=None, help="CSV output path.")

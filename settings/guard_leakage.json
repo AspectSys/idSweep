@@ -1,0 +1,31 @@
+{
+  "test_name": "Guard Leakage",
+  "excel_sheet": "GuardLeakage",
+  "instruments": {
+    "switch_matrix": "GPIB0::18::INSTR",
+    "smu_mainframe": "GPIB0::17::INSTR",
+    "matrix_settling_s": 0.3,
+    "workbook": "settings/ParameterMatrix_DF.xlsx"
+  },
+  "smus": {
+    "cathode_SMU1": {
+      "compliance_A": 0.1,
+      "speed": "Slow",
+      "range": "Auto",
+      "average": 1,
+      "sweep_profile": [
+        {"voltage": 0.0, "hold_s": 1.0},
+        {"voltage": 2.5, "hold_s": 8.0}
+      ]
+    },
+    "guard_SMU3": {
+      "compliance_A": 0.1,
+      "speed": "Slow",
+      "range": "Auto",
+      "average": 3,
+      "sweep_profile": [
+        {"voltage": 0.0, "hold_s": 8.0}
+      ]
+    }
+  }
+}
