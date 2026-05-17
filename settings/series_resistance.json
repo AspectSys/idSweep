@@ -16,8 +16,8 @@
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
-        {"current": -0.02,  "hold_s": 0.0},
-        {"current": -0.035, "hold_s": 0.0}
+        {"voltage": -0.02,  "hold_s": 0.0},
+        {"voltage": -0.035, "hold_s": 0.0}
       ]
     },
     "anode_SMU2": {

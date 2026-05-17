@@ -30,8 +30,9 @@ def main() -> None:
             output_path=args.output,
         ).run()
     elif "series_resistance" in raw:
-        from core.series_resistance_engine import SeriesResistanceRunner, load_series_resistance_spec
-        spec = load_series_resistance_spec(args.config)
+        from core.channel import load_measurement_spec
+        from core.series_resistance_engine import SeriesResistanceRunner
+        spec = load_measurement_spec(args.config)
         SeriesResistanceRunner(
             spec,
             dry_run=args.dry_run,

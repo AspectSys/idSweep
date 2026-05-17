@@ -21,6 +21,7 @@ class ChannelSpec:
     range_: str                        # e.g. "Auto"  (named range_ to avoid shadowing built-in)
     average: int
     sweep_profile: Tuple[SweepStep, ...]
+    sweep_mode: str = "Voltage in V"  # "Voltage in V" or "Current in A"
 
     @property
     def is_primary(self) -> bool:
@@ -90,6 +91,7 @@ def load_measurement_spec(
                 range_=cfg["range"],
                 average=cfg["average"],
                 sweep_profile=sweep_profile,
+                sweep_mode=cfg.get("sweep_mode", "Voltage in V"),
             )
         )
 

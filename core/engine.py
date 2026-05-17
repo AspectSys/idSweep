@@ -124,7 +124,7 @@ class SweepRunner:
             {
                 "Port": self.spec.hardware.smu_mainframe,
                 "Channel": ch.smu,
-                "SweepMode": "Voltage in V",
+                "SweepMode": ch.sweep_mode,
                 "Range": ch.range_,
                 "Speed": ch.speed,
                 "Compliance": ch.compliance_a,
@@ -208,7 +208,8 @@ class SweepRunner:
         smu = self.smu_drivers[ch.role]
         smu.value = voltage
         smu.apply()
-        print(f"Applied {ch.label} {ch.smu} = {voltage:.3f} V")
+        unit = "A" if ch.sweep_mode == "Current in A" else "V"
+        print(f"Applied {ch.label} {ch.smu} = {voltage:.3f} {unit}")
 
     def _measure(self, ch: ChannelSpec) -> Tuple[float, float]:
         smu = self.smu_drivers[ch.role]
