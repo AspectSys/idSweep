@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(///tester3/Users/idUSER/repos/sweep/**)"
+    ]
+  }
+}
