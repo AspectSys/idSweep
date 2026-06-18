@@ -16,15 +16,25 @@ python sweep.py settings/dark_current.json
 python sweep.py settings/guard_leakage.json --dry-run
 python sweep.py settings/capacitance.json --limit-rows 3
 
-# All measurements in sequence + generate report
+# All measurements + report for ONE device, no prober (today's workflow)
 python run_all.py
 python run_all.py --dry-run --limit-rows 2
+
+# Full wafer: prober steps to each die, runs run_all per device
+python run_wafer.py GPIB0::1::INSTR accretech/examples/DF.mdf
+python run_wafer.py GPIB0::1::INSTR accretech/examples/DF.mdf --dry-run --limit-rows 1
 ```
 
-`--dry-run` simulates without touching hardware (uses `DryRunResourceManager` / `DryRunPort`).  
-`--limit-rows N` caps the Excel rows processed per test.
+Three run modes: `sweep.py` (one measurement, no prober), `run_all.py` (all four for one
+device, **no prober** — the no-prober path), `run_wafer.py` (prober loop over a wafer; both
+`run_all` and `run_wafer` call the same `run_device()`). The wafer prober is the standalone
+`accretech-prober` package (under `accretech/`, wired as a uv editable path dependency).
 
-Output CSVs land in `results/` with a timestamped filename.
+`--dry-run` simulates without touching hardware (`DryRunResourceManager` / `DryRunPort`; plus a
+`NullProberController` in `run_wafer.py`). `--limit-rows N` caps the Excel rows per test.
+
+`sweep.py` writes a timestamped CSV in `results/`. `run_all.py` / `run_wafer.py` write a
+per-device folder `results/wafer<id>/dev<NNN>_x<x>_y<y>/` holding the 4 CSVs + the report.
 
 ## Config dispatch logic
 

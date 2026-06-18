@@ -203,7 +203,7 @@ Flags:
 | `--limit-rows N` | Process only the first N rows of the Excel sheet. |
 | `--output PATH` | Override the CSV output path (default: `results/<TestName>_<timestamp>.csv`). |
 
-### Full run + report — `run_all.py`
+### One device, no prober — `run_all.py`
 
 ```bash
 python run_all.py
@@ -212,8 +212,26 @@ python run_all.py --dry-run --limit-rows 2
 
 `run_all.py` runs the four configs **in a fixed order** (guard leakage → dark current →
 capacitance → series resistance), waiting a few seconds between tests, then feeds the four
-resulting CSVs plus `run_info.json` into `ReportWriter` to produce the final
-`results/result_<ts>_wafer..._dev....txt` report.
+resulting CSVs plus `run_info.json` into `ReportWriter`. The reusable core is
+`run_device(run_info, *, dry_run, limit_rows, output_dir)`, which writes all four CSVs and the
+report into one **per-device folder** `results/wafer<id>/dev<NNN>_x<x>_y<y>/` (fixed,
+collision-free names). This is the **no-prober** path — `run_all.py` never imports the prober.
+
+### Full wafer — `run_wafer.py`
+
+```bash
+python run_wafer.py GPIB0::1::INSTR accretech/examples/DF.mdf
+python run_wafer.py GPIB0::1::INSTR accretech/examples/DF.mdf --dry-run --limit-rows 1
+```
+
+`run_wafer.py` is the outer prober loop: it parses an `.mdf` probe plan
+(`accretech_prober.parsers.read_mdf_probe_plan` → `(die_x, die_y)` per `PROB` die), and for
+each die calls `controller.move_to_die(x, y)` then the **same** `run_device()` `run_all.py`
+uses — with `run_info` derived from `settings/run_info.json` (position = die x/y, auto-
+incrementing `device_no`). The prober is the standalone `accretech-prober` package (under
+`accretech/`, wired as a **uv editable path dependency**; not modified by this repo).
+`--dry-run` swaps in a `NullProberController` so the whole loop runs with no GPIB. On error it
+calls `abort_and_safe_state()`; it always `separate()`s and closes the prober in `finally`.
 
 ### Dispatch logic (how the runner is chosen)
 
@@ -327,13 +345,16 @@ the spec it is handed; swapping configs swaps behavior without touching engine c
 
 ## 8. Outputs
 
-- **Per-measurement CSV** — `results/<TestName>_<timestamp>.csv`, one row per sweep-nest
-  combination (or per pin for series resistance / capacitance), columns derived from channel
-  roles, plus a global `Step Index` and per-channel `<Label> Step Index`.
-- **Final report** — `results/result_<ts>_wafer<id>_x<..>_y<..>_dev<NNN>.txt`, produced by
-  `run_all.py`. Tab-separated, with a metadata header (from `run_info.json`), one line per
-  pin-test with applied limits and a pass/fail bin, and a footer with total time, soft bin,
-  and overall pass flag.
+- **`sweep.py` (single measurement)** — `results/<TestName>_<timestamp>.csv`, one row per
+  sweep-nest combination (or per pin for series resistance / capacitance), columns derived from
+  channel roles, plus a global `Step Index` and per-channel `<Label> Step Index`.
+- **`run_all.py` / `run_wafer.py` (per device)** — a folder
+  `results/wafer<id>/dev<NNN>_x<x>_y<y>/` holding the four measurement CSVs
+  (`guard_leakage.csv`, `dark_current.csv`, `capacitance.csv`, `series_resistance.csv`) and the
+  device report `result_dev<NNN>.txt`. `run_wafer.py` creates one such folder per probed die.
+- **Report** — tab-separated `result_dev<NNN>.txt`, with a metadata header (from
+  `run_info.json`), one line per pin-test with applied limits and a pass/fail bin, and a footer
+  with total time, soft bin, and overall pass flag.
 
 ---
 

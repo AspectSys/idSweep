@@ -3,7 +3,7 @@ name = "accretech-prober"
 version = "0.1.0"
 description = "Standalone Python library to control Accretech UF series wafer probers over PyVISA."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Accretech Prober maintainers" }]
 keywords = ["accretech", "wafer prober", "pyvisa", "gpib", "semiconductor"]
