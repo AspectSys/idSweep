@@ -46,6 +46,7 @@ class SweepRunner:
 
         self.resource_manager = None
         self.matrix = None
+        self.smu_resource = None  # the opened VISA resource for the SMU mainframe
         self.smu_drivers: Dict[str, Keithley4200SCS] = {}  # keyed by ch.role
         self.results: List[Dict[str, object]] = []
 
@@ -109,6 +110,7 @@ class SweepRunner:
             raise RuntimeError("Resource manager is not initialized.")
 
         smu_resource = self.resource_manager.open_resource(self.spec.hardware.smu_mainframe)
+        self.smu_resource = smu_resource
         smu_resource.clear()  # GPIB Device Clear: flushes 4200 state between tests
         shared_port = PortWrapper(
             smu_resource,
@@ -285,11 +287,26 @@ class SweepRunner:
             except Exception as error:
                 print(f"WARNING: Could not open matrix crosspoints during shutdown: {error}")
 
-        if self.resource_manager is not None and hasattr(self.resource_manager, "close"):
+        self._close_resources()
+
+    def _close_resources(self) -> None:
+        """Close the VISA resources this runner opened.
+
+        Deliberately does NOT close the shared pyvisa ResourceManager: it is a
+        process-wide singleton that other code (e.g. the wafer prober in
+        run_wafer.py) may hold open across many measurement runs. Closing it here
+        would invalidate those sessions (pyvisa.errors.InvalidSession).
+        """
+        if self.smu_resource is not None and hasattr(self.smu_resource, "close"):
             try:
-                self.resource_manager.close()
+                self.smu_resource.close()
             except Exception as error:
-                print(f"WARNING: Could not close VISA resource manager: {error}")
+                print(f"WARNING: Could not close SMU resource: {error}")
+        if self.matrix is not None:
+            try:
+                self.matrix.close()
+            except Exception as error:
+                print(f"WARNING: Could not close matrix resource: {error}")
 
     def _default_output_path(self) -> Path:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

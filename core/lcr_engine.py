@@ -40,6 +40,7 @@ class LCRRunner:
 
         self.resource_manager = None
         self.matrix = None
+        self.lcr_resource = None  # the opened VISA resource for the LCR meter
         self.lcr: Optional[Keithley590] = None
         self.results: List[Dict[str, object]] = []
 
@@ -103,6 +104,7 @@ class LCRRunner:
             raise RuntimeError("Resource manager is not initialized.")
 
         lcr_resource = self.resource_manager.open_resource(self.spec.lcr_meter)
+        self.lcr_resource = lcr_resource
         port = PortWrapper(
             lcr_resource,
             write_termination=self._LCR_WRITE_TERMINATION,
@@ -182,11 +184,26 @@ class LCRRunner:
             except Exception as error:
                 print(f"WARNING: Could not open matrix crosspoints during shutdown: {error}")
 
-        if self.resource_manager is not None and hasattr(self.resource_manager, "close"):
+        self._close_resources()
+
+    def _close_resources(self) -> None:
+        """Close the VISA resources this runner opened.
+
+        Deliberately does NOT close the shared pyvisa ResourceManager: it is a
+        process-wide singleton that other code (e.g. the wafer prober in
+        run_wafer.py) may hold open across many measurement runs. Closing it here
+        would invalidate those sessions (pyvisa.errors.InvalidSession).
+        """
+        if self.lcr_resource is not None and hasattr(self.lcr_resource, "close"):
             try:
-                self.resource_manager.close()
+                self.lcr_resource.close()
             except Exception as error:
-                print(f"WARNING: Could not close VISA resource manager: {error}")
+                print(f"WARNING: Could not close LCR resource: {error}")
+        if self.matrix is not None:
+            try:
+                self.matrix.close()
+            except Exception as error:
+                print(f"WARNING: Could not close matrix resource: {error}")
 
     def _default_output_path(self) -> Path:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -4,10 +4,10 @@ Operator Name	aS Staff
 Test Station	aS 2
 LOT ID	T0001
 Wafer ID	01
-Tester Device Pos X	10
-Tester Device Pos Y	8
+Tester Device Pos X	5
+Tester Device Pos Y	1
 Temperature	21.0
-Device No	1
+Device No	2
 0101	Guard Leakage 0V [nA]	1	1	0.0	0.0	0.1
 0102	Guard Leakage 2.5V [nA]	1	1	0.0	0.0	0.1
 0103	Pin OUT1 Dark Current -1.25V [mA]	1	1	0.0	0.0	0.1

@@ -66,6 +66,12 @@ class SwitchingMatrix707A:
     def shutdown(self) -> None:
         self.open_all()
 
+    def close(self) -> None:
+        """Close the underlying VISA resource (no-op for dry-run ports)."""
+        resource = getattr(self.driver.port, "port", None)
+        if resource is not None and hasattr(resource, "close"):
+            resource.close()
+
 
 def connect_707a_matrix(resource_manager, address: str = SWITCH_PORT_ADDRESS, settling_seconds: float = MATRIX_SETTLING_SECONDS, dry_run: bool = False) -> SwitchingMatrix707A:
     resource = resource_manager.open_resource(address)
