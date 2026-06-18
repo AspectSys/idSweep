@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import time
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 import pandas as pd
 import pyvisa
 
-from core.channel import ChannelSpec, MeasurementSpec
+from core.channel import ChannelSpec, MeasurementSpec, SweepStep
 from core.port import DryRunResourceManager, PortWrapper
 from keithley4200 import Device as Keithley4200SCS
 from parameter_matrix import load_parameter_rows
@@ -18,11 +19,14 @@ from switching_matrix import connect_707a_matrix, normalize_matrix_config
 class SweepRunner:
     """Generic sweep runner driven entirely by a MeasurementSpec.
 
-    Replaces the measurement-specific GuardLeakageTest class. The sweep loop
-    applies channels in the order they appear in spec.channels:
-      1. Primary channel voltage + hold
-      2. Each fixed channel voltage + hold (in declaration order)
-      3. Measure all channels → one CSV row
+    Each channel's sweep_profile is a loop axis. For every Excel row the runner
+    sweeps the Cartesian product of all profiles in declaration order, with the
+    first channel as the outermost (slowest-varying) loop and the last channel
+    as the innermost. At each combination it:
+      1. Applies every channel's voltage + hold (in declaration order)
+      2. Measures all channels → one CSV row
+    A channel with a single sweep_profile entry is simply held at that value, so
+    a config where only one channel is multi-step reproduces a plain 1-D sweep.
     """
 
     _SMU_WRITE_TERMINATION = "\r\n"
@@ -146,51 +150,59 @@ class SweepRunner:
     #  Sweep loop                                                          #
     # ------------------------------------------------------------------ #
 
+    @staticmethod
+    def _build_combos(
+        channels: Tuple[ChannelSpec, ...],
+    ) -> List[Tuple[Tuple[int, SweepStep], ...]]:
+        """Enumerate the sweep nest as a Cartesian product of channel profiles.
+
+        Returns the list of combinations in iteration order. Each combination is
+        a tuple aligned by index with ``channels``; element ``k`` is the
+        ``(step_index, step)`` pair for channel ``k`` at that point in the nest.
+
+        ``itertools.product`` advances the first iterable slowest, so the first
+        channel is the outermost loop and the last channel the innermost — i.e.
+        JSON declaration order == loop nesting order.
+        """
+        indexed = [list(enumerate(ch.sweep_profile)) for ch in channels]
+        return list(itertools.product(*indexed))
+
     def _run_row(self, row_index: int, row: Dict[str, str]) -> None:
         measured_pin = row["Measured Pin"]
         normalized = normalize_matrix_config(row["Matrix Config"])
         print(f"\nRow {row_index}: pin={measured_pin}, matrix={normalized}")
         self._apply_matrix_config(normalized)
 
-        primary = next((ch for ch in self.spec.channels if ch.is_primary), None)
-        fixed = [ch for ch in self.spec.channels if not ch.is_primary]
-
-        # With no primary channel, run a single static pass (one CSV row);
-        # the (None,) sentinel drives exactly one loop iteration.
-        steps = primary.sweep_profile if primary is not None else (None,)
-
-        for step_index, step in enumerate(steps):
-            # Apply primary channel (skipped when there is no swept channel)
-            if primary is not None:
-                self._apply_voltage(primary, step.voltage)
-                self._wait(step.hold_s, f"{primary.label} hold at {step.voltage} V")
-
-            # Apply each fixed channel in declaration order
-            for ch in fixed:
-                fixed_step = ch.sweep_profile[0]
-                self._apply_voltage(ch, fixed_step.voltage)
-                self._wait(fixed_step.hold_s, f"{ch.label} hold at {fixed_step.voltage} V")
+        channels = self.spec.channels
+        for combo_index, combo in enumerate(self._build_combos(channels)):
+            # Apply every channel in declaration order. Holds are honored on
+            # every combination (no change-detection) so the timing is exactly
+            # what the JSON declares.
+            for ch, (_, step) in zip(channels, combo):
+                self._apply_voltage(ch, step.voltage)
+                self._wait(step.hold_s, f"{ch.label} hold at {step.voltage} V")
 
             # Measure all channels
             measurements: Dict[str, Tuple[float, float]] = {}
-            for ch in self.spec.channels:
+            for ch in channels:
                 v, i = self._measure(ch)
                 measurements[ch.role] = (v, i)
 
-            # Build CSV row with dynamic column names from channel roles
+            # Build CSV row with dynamic column names from channel roles.
+            # "Step Index" is the flattened combo index; for a single-axis sweep
+            # it equals that channel's step index (see report.py).
             result: Dict[str, object] = {
                 "Timestamp": datetime.now().isoformat(timespec="seconds"),
                 "Measured Pin": measured_pin,
                 "Matrix Config": normalized,
-                "Step Index": step_index,
+                "Step Index": combo_index,
             }
-            for ch in self.spec.channels:
-                target_v = step.voltage if ch.is_primary else ch.sweep_profile[0].voltage
-                hold_s = step.hold_s if ch.is_primary else ch.sweep_profile[0].hold_s
+            for ch, (step_index, step) in zip(channels, combo):
                 v, i = measurements[ch.role]
                 result[f"{ch.label} Channel"] = ch.smu
-                result[f"{ch.label} Target V"] = target_v
-                result[f"{ch.label} Hold s"] = hold_s
+                result[f"{ch.label} Step Index"] = step_index
+                result[f"{ch.label} Target V"] = step.voltage
+                result[f"{ch.label} Hold s"] = step.hold_s
                 result[f"{ch.label} Measured V"] = v
                 result[f"{ch.label} Current A"] = i
 
@@ -198,9 +210,9 @@ class SweepRunner:
 
             summary = ", ".join(
                 f"{ch.label}={measurements[ch.role][1]:.3e} A"
-                for ch in self.spec.channels
+                for ch in channels
             )
-            print(f"Step {step_index}: {summary}")
+            print(f"Step {combo_index}: {summary}")
 
     # ------------------------------------------------------------------ #
     #  Device control helpers                                              #

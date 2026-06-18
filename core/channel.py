@@ -61,10 +61,10 @@ def load_measurement_spec(
         workbook_path: Override the Excel workbook path. Falls back to the
             WORKBOOK_PATH constant from parameter_matrix if not provided.
 
-    Raises:
-        ValueError: If the config contains more than one primary channel
-            (i.e. more than one SMU with more than one sweep_profile entry).
-            Zero primary channels is allowed and runs as a single static pass.
+    Any number of multi-step channels is allowed. Each channel's sweep_profile
+    becomes a loop axis: the engine sweeps the Cartesian product of all profiles
+    in declaration order, with the first channel as the outermost (slowest) loop.
+    A channel with a single sweep_profile entry is simply held at that value.
     """
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -94,13 +94,6 @@ def load_measurement_spec(
                 sweep_profile=sweep_profile,
                 sweep_mode=cfg.get("sweep_mode", "Voltage in V"),
             )
-        )
-
-    primary_count = sum(1 for ch in channels if ch.is_primary)
-    if primary_count > 1:
-        raise ValueError(
-            f"Expected at most 1 primary channel (with >1 sweep_profile entries), "
-            f"found {primary_count}. Channels: {[ch.role for ch in channels]}"
         )
 
     # Resolve workbook path: CLI override → JSON config → hardcoded default

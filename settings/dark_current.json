@@ -14,6 +14,7 @@
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
+        {"voltage": -1.25, "hold_s": 0.0},
         {"voltage": 2.5,   "hold_s": 0.0}
       ]
     },
@@ -41,7 +42,7 @@
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
-        {"voltage": 0.0, "hold_s": 1.0}
+        {"voltage": 0.0, "hold_s": 3.0}
       ]
     }
   }

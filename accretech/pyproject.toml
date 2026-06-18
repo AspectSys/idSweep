@@ -1,0 +1,46 @@
+[project]
+name = "accretech-prober"
+version = "0.1.0"
+description = "Standalone Python library to control Accretech UF series wafer probers over PyVISA."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Accretech Prober maintainers" }]
+keywords = ["accretech", "wafer prober", "pyvisa", "gpib", "semiconductor"]
+dependencies = [
+    "pyvisa>=1.12",
+]
+
+[project.optional-dependencies]
+# Pure-Python VISA backend, useful when no vendor NI-VISA is installed.
+backend = ["pyvisa-py>=0.7"]
+
+[project.urls]
+Homepage = "https://example.com/accretech-prober"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/accretech_prober"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+# The original SweepMe! driver files are kept as reference inputs only; do not lint them.
+extend-exclude = ["accretech_uf.py", "main.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -117,21 +117,28 @@ Each entry under `"smus"` is one SMU channel. **The key encodes the role and the
 }
 ```
 
-**Primary vs. fixed channels — the single most important rule:**
+**Each `sweep_profile` is a loop axis — the single most important rule:**
 
-- A channel whose `sweep_profile` has **more than one step** is the **primary** (swept)
-  channel. The engine iterates over its steps.
-- Every other channel has exactly **one** step and is held **fixed** at that setpoint.
-- **Exactly one** primary channel must exist per config. `load_measurement_spec()` raises
-  `ValueError` if there are zero or two-or-more. This is how the loader knows which channel to
-  sweep without you having to flag it explicitly.
+`SweepRunner` treats every channel's `sweep_profile` as one axis of a **nested sweep**
+(Cartesian product). For each Excel row it sweeps every combination of every channel's steps:
+
+- **JSON declaration order = loop nesting order.** The **first** channel in the JSON is the
+  **outermost** loop (varies slowest); the **last** channel is the **innermost** (varies
+  fastest). All channels are applied in declaration order at every combination, each honoring
+  its own `hold_s` — there is no implicit skipping, so the timing is exactly what the JSON
+  declares.
+- A channel with a **single** step is simply held at that value across the whole nest, so it
+  contributes one point to its axis. A config where only one channel is multi-step therefore
+  collapses to a plain 1-D sweep of that channel — which is exactly how `guard_leakage.json`
+  and `dark_current.json` behave.
+- **Any number** of multi-step channels is allowed; the total row count per pin is the product
+  of the per-channel step counts. `load_measurement_spec()` no longer restricts this. (The
+  `ChannelSpec.is_primary` helper — "more than one step" — still exists and is used by the
+  series-resistance engine to locate its swept channel.)
 
 `sweep_mode` lets a channel source current instead of voltage (used by series resistance,
 which forces two current setpoints). Despite the field being named `voltage`, it carries the
 current value in amps when `sweep_mode` is `"Current in A"`.
-
-Channel **declaration order = application order**: the primary is applied first, then each
-fixed channel in the order it appears in the JSON.
 
 ### 3.3 LCR config (`lcr` block)
 
@@ -248,12 +255,17 @@ LCRRunner                   (core/lcr_engine.py)    ← standalone, drives the 5
 The generic engine and the base class. For each row it:
 
 1. Routes the matrix to the row's crosspoints.
-2. Loops over the **primary** channel's sweep steps. At each step it applies the primary
-   setpoint + hold, then applies every **fixed** channel at its single setpoint + hold.
-3. Measures **all** channels and appends **one CSV row per sweep step**, with column names
-   generated from the channel roles (`Cathode Target V`, `Cathode Current A`, …).
+2. Walks the **Cartesian product** of all channels' sweep steps (`_build_combos`, built on
+   `itertools.product` so the first channel is the outermost loop). At each combination it
+   applies every channel's setpoint + hold in declaration order.
+3. Measures **all** channels and appends **one CSV row per combination**, with column names
+   generated from the channel roles (`Cathode Target V`, `Cathode Current A`, …). Each row
+   carries a flattened global `Step Index` plus a per-channel `<Label> Step Index`.
 
-This covers guard leakage and dark current: source a voltage on the primary, read the current.
+This covers guard leakage and dark current: source a voltage on one channel, hold the others,
+read the current. With only one multi-step channel the product collapses to that channel's
+steps, and the global `Step Index` equals its step index — which is what `report.py` relies on
+(see §6.4 / the note in `report.py`).
 
 ### 6.2 `SeriesResistanceRunner` — `core/series_resistance_engine.py`
 
@@ -286,9 +298,8 @@ The engine is **driven by the spec dataclass**, which is in turn built from the 
 
 1. `sweep.py` reads the JSON, inspects its keys, and calls the matching `load_*_spec()`.
 2. The loader (`core/channel.py` or `core/lcr_channel.py`) parses the JSON into a **frozen
-   dataclass** (`MeasurementSpec` / `LCRMeasurementSpec`). This is where validation lives
-   (e.g. the "exactly one primary channel" rule). Nothing mutable or hardware-related is in
-   the data model.
+   dataclass** (`MeasurementSpec` / `LCRMeasurementSpec`). This is where parsing and any
+   validation live. Nothing mutable or hardware-related is in the data model.
 3. The chosen Runner is constructed with that spec and `.run()` is called. The runner reads
    everything it needs (addresses, channels, sweep profile) off the spec — it never re-reads
    the JSON.
@@ -302,7 +313,7 @@ the spec it is handed; swapping configs swaps behavior without touching engine c
 
 | Module | Responsibility |
 |---|---|
-| `core/channel.py` | `MeasurementSpec`/`ChannelSpec`/`HardwareConfig`/`SweepStep` dataclasses + `load_measurement_spec()` (SMU configs). Enforces the one-primary-channel rule. |
+| `core/channel.py` | `MeasurementSpec`/`ChannelSpec`/`HardwareConfig`/`SweepStep` dataclasses + `load_measurement_spec()` (SMU configs). Channels keep JSON declaration order, which the engine uses as sweep-nest order. |
 | `core/lcr_channel.py` | `LCRMeasurementSpec`/`LCRSpec` dataclasses + `load_lcr_spec()` (LCR config). |
 | `core/port.py` | `PortWrapper` adapts a PyVISA resource to the `.write/.read/.query` API the SweepMe! drivers expect. `DryRunPort`/`DryRunResourceManager` stub hardware for `--dry-run` and print every command. |
 | `switching_matrix.py` | `SwitchingMatrix707A` wraps the 707A driver (`apply_route`, `open_all`, `shutdown`); `normalize_matrix_config()` canonicalizes crosspoint strings. |
@@ -316,8 +327,9 @@ the spec it is handed; swapping configs swaps behavior without touching engine c
 
 ## 8. Outputs
 
-- **Per-measurement CSV** — `results/<TestName>_<timestamp>.csv`, one row per sweep step
-  (or per pin for series resistance / capacitance), columns derived from channel roles.
+- **Per-measurement CSV** — `results/<TestName>_<timestamp>.csv`, one row per sweep-nest
+  combination (or per pin for series resistance / capacitance), columns derived from channel
+  roles, plus a global `Step Index` and per-channel `<Label> Step Index`.
 - **Final report** — `results/result_<ts>_wafer<id>_x<..>_y<..>_dev<NNN>.txt`, produced by
   `run_all.py`. Tab-separated, with a metadata header (from `run_info.json`), one line per
   pin-test with applied limits and a pass/fail bin, and a footer with total time, soft bin,

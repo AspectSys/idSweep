@@ -41,13 +41,13 @@ Output CSVs land in `results/` with a timestamped filename.
 ### Config layer — `settings/*.json`
 Each JSON file defines one measurement: VISA addresses, Excel sheet name, and one or more SMU channels. SMU keys use the format `"<role>_<SMU_ID>"` (e.g. `"cathode_SMU1"`); the role becomes the CSV column prefix.
 
-**Primary vs fixed channels**: A channel with more than one `sweep_profile` entry is the *primary* (swept). All others are *fixed* (held at their single setpoint). Exactly one primary channel must exist per config — `load_measurement_spec` raises `ValueError` otherwise.
+**Sweep nest**: Each channel's `sweep_profile` is one axis of a nested sweep. For each Excel row, `SweepRunner` walks the Cartesian product of all channels' steps; JSON declaration order = nesting order (first channel = outermost/slowest, last = innermost/fastest). A single-step channel is just held at its value, so a config with one multi-step channel is a plain 1-D sweep. Any number of multi-step channels is allowed. (`ChannelSpec.is_primary` = "more than one step" still exists, used by the series-resistance engine.)
 
 ### Data model — `core/channel.py`, `core/lcr_channel.py`
 Frozen dataclasses (`MeasurementSpec`, `ChannelSpec`, `HardwareConfig`, `SweepStep`) are built by `load_measurement_spec()` / `load_lcr_spec()` from the JSON. Nothing mutable lives here.
 
 ### Runners — `core/engine.py`, `core/series_resistance_engine.py`, `core/lcr_engine.py`
-- `SweepRunner` — generic: for each row, applies matrix, iterates sweep steps, measures all channels, appends one CSV row per step.
+- `SweepRunner` — generic: for each row, applies matrix, walks the Cartesian product of all channels' sweep steps (`_build_combos`), measures all channels, appends one CSV row per combination (global `Step Index` + per-channel `<Label> Step Index`).
 - `SeriesResistanceRunner(SweepRunner)` — overrides `_run_row` only: applies two current setpoints, computes Rs = (ΔV + 2·ln(I2/I1)·26mV) / ΔI, emits one CSV row per pin.
 - `LCRRunner` — standalone (does not extend `SweepRunner`): same matrix loop but drives the Keithley 590 for C/G measurements.
 

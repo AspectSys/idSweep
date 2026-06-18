@@ -39,7 +39,12 @@ class ReportWriter:
     def run(self, output_path: Optional[Path] = None) -> Path:
         lines: List[str] = list(self._header().splitlines(keepends=True))
 
-        # Guard leakage -- device-level, 2 rows (step 0 = 0 V, step 1 = 2.5 V)
+        # Guard leakage -- device-level, 2 rows (step 0 = 0 V, step 1 = 2.5 V).
+        # NOTE: the engine's global "Step Index" is the flattened sweep-nest combo
+        # index. It equals a single channel's step index only while at most one
+        # channel is multi-step (the case for every current config). A genuine
+        # multi-axis sweep would make these "Step Index == 0/1" filters select a
+        # slice of the nest; switch to per-channel "<Label> Step Index" columns then.
         gl_0v = float(self.gl.loc[self.gl["Step Index"] == 0, "Guard Current A"].iloc[0])
         gl_2v = float(self.gl.loc[self.gl["Step Index"] == 1, "Guard Current A"].iloc[0])
 
