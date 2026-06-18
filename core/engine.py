@@ -152,13 +152,18 @@ class SweepRunner:
         print(f"\nRow {row_index}: pin={measured_pin}, matrix={normalized}")
         self._apply_matrix_config(normalized)
 
-        primary = next(ch for ch in self.spec.channels if ch.is_primary)
+        primary = next((ch for ch in self.spec.channels if ch.is_primary), None)
         fixed = [ch for ch in self.spec.channels if not ch.is_primary]
 
-        for step_index, step in enumerate(primary.sweep_profile):
-            # Apply primary channel
-            self._apply_voltage(primary, step.voltage)
-            self._wait(step.hold_s, f"{primary.label} hold at {step.voltage} V")
+        # With no primary channel, run a single static pass (one CSV row);
+        # the (None,) sentinel drives exactly one loop iteration.
+        steps = primary.sweep_profile if primary is not None else (None,)
+
+        for step_index, step in enumerate(steps):
+            # Apply primary channel (skipped when there is no swept channel)
+            if primary is not None:
+                self._apply_voltage(primary, step.voltage)
+                self._wait(step.hold_s, f"{primary.label} hold at {step.voltage} V")
 
             # Apply each fixed channel in declaration order
             for ch in fixed:

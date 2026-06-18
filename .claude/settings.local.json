@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Read(///tester3/Users/idUSER/repos/sweep/**)"
+      "Read(///tester3/Users/idUSER/repos/sweep/**)",
+      "Bash(cd \"//tester3/Users/idUSER/repos/sweep\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('core/engine.py'\\).read\\(\\)\\); ast.parse\\(open\\('core/channel.py'\\).read\\(\\)\\); print\\('syntax OK'\\)\")",
+      "PowerShell(python -c \"import ast; ast.parse\\(open\\('core/engine.py'\\).read\\(\\)\\); ast.parse\\(open\\('core/channel.py'\\).read\\(\\)\\); print\\('syntax OK'\\)\")"
     ]
   }
 }

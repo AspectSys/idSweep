@@ -62,8 +62,9 @@ def load_measurement_spec(
             WORKBOOK_PATH constant from parameter_matrix if not provided.
 
     Raises:
-        ValueError: If the config does not contain exactly one primary channel
-            (i.e. exactly one SMU with more than one sweep_profile entry).
+        ValueError: If the config contains more than one primary channel
+            (i.e. more than one SMU with more than one sweep_profile entry).
+            Zero primary channels is allowed and runs as a single static pass.
     """
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -96,9 +97,9 @@ def load_measurement_spec(
         )
 
     primary_count = sum(1 for ch in channels if ch.is_primary)
-    if primary_count != 1:
+    if primary_count > 1:
         raise ValueError(
-            f"Expected exactly 1 primary channel (with >1 sweep_profile entries), "
+            f"Expected at most 1 primary channel (with >1 sweep_profile entries), "
             f"found {primary_count}. Channels: {[ch.role for ch in channels]}"
         )
 
