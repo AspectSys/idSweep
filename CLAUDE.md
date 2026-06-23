@@ -74,8 +74,8 @@ All runners share the same public interface: `Runner(spec, dry_run, limit_rows, 
 ### Report — `core/report.py`
 `ReportWriter` consumes the four CSVs produced by `run_all.py` plus `settings/run_info.json` to generate a summary report.
 
-### Post-processing — `core/post_process.py`
-SweepMe!-style script (not called by `sweep.py` / `run_all.py`). Formats per-pin results into a tab-separated `.txt` file consumed by the test station. Depends on `pysweepme` and `ParameterManager`.
+### Post-processing — `ref/post_process.py`
+SweepMe!-style script kept for reference only (not called by `sweep.py` / `run_all.py`). Formats per-pin results into a tab-separated `.txt` file consumed by the test station. Depends on `pysweepme` and `ParameterManager`.
 
 ## Helper scripts
 

@@ -78,7 +78,7 @@ class SweepRunner:
             self._safe_shutdown()
 
         output_path = self.output_path or self._default_output_path()
-        pd.DataFrame(self.results).to_csv(output_path, index=False)
+        pd.DataFrame(self.results).to_csv(output_path, index=False, sep=";", decimal=",")
         print(f"Saved {len(self.results)} measurement row(s) to {output_path}")
         return output_path
 

@@ -169,5 +169,5 @@ finally:
     # Save the gathered data to a CSV file
     if test_results:
         results_df = pd.DataFrame(test_results)
-        results_df.to_csv("DarkCurrent_Results.csv", index=False)
+        results_df.to_csv("DarkCurrent_Results.csv", index=False, sep=";", decimal=",")
         print("Data successfully saved to 'DarkCurrent_Results.csv'!")

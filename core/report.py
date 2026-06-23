@@ -29,10 +29,10 @@ class ReportWriter:
         series_resistance_csv: Path,
         run_info: Dict[str, str],
     ) -> None:
-        self.gl  = pd.read_csv(guard_leakage_csv)
-        self.dc  = pd.read_csv(dark_current_csv)
-        self.cap = pd.read_csv(capacitance_csv)
-        self.rs  = pd.read_csv(series_resistance_csv)
+        self.gl  = pd.read_csv(guard_leakage_csv,     sep=";", decimal=",")
+        self.dc  = pd.read_csv(dark_current_csv,      sep=";", decimal=",")
+        self.cap = pd.read_csv(capacitance_csv,       sep=";", decimal=",")
+        self.rs  = pd.read_csv(series_resistance_csv, sep=";", decimal=",")
         self.run_info = run_info
         self._soft_bin = 1
 
@@ -89,6 +89,11 @@ class ReportWriter:
 
     # ------------------------------------------------------------------ #
 
+    @staticmethod
+    def _dec(value: object) -> str:
+        """Format a value with a comma decimal separator for the result txt."""
+        return str(value).replace(".", ",")
+
     def _header(self) -> str:
         ri = self.run_info
         now = datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S")
@@ -101,7 +106,7 @@ class ReportWriter:
             f"Wafer ID\t{ri.get('wafer_id', '')}\n"
             f"Tester Device Pos X\t{ri.get('tester_device_pos_x', '')}\n"
             f"Tester Device Pos Y\t{ri.get('tester_device_pos_y', '')}\n"
-            f"Temperature\t{ri.get('temperature', '')}\n"
+            f"Temperature\t{self._dec(ri.get('temperature', ''))}\n"
             f"Device No\t{ri.get('device_no', '')}\n"
         )
 
@@ -120,7 +125,10 @@ class ReportWriter:
         bin_ = 1 if pass_fail else fail_bin
         if bin_ > self._soft_bin:
             self._soft_bin = bin_
-        line = f"{pin_seq:02d}{test_num:02d}\t{name}\t{bin_}\t{pass_fail}\t{low}\t{value}\t{high}\n"
+        line = (
+            f"{pin_seq:02d}{test_num:02d}\t{name}\t{bin_}\t{pass_fail}\t"
+            f"{self._dec(low)}\t{self._dec(value)}\t{self._dec(high)}\n"
+        )
         return line.splitlines(keepends=True)
 
     def _footer(self) -> str:

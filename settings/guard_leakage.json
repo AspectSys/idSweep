@@ -9,22 +9,22 @@
   },
   "smus": {
     "cathode_SMU1": {
-      "compliance_A": 0.1,
+      "compliance_A": 0.15,
       "speed": "Slow",
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
-        {"voltage": 0.0, "hold_s": 1.0},
-        {"voltage": 2.5, "hold_s": 8.0}
+        {"voltage": -1.25, "hold_s": 0.0},
+        {"voltage": 2.5, "hold_s": 0.0}
       ]
     },
     "guard_SMU3": {
-      "compliance_A": 0.1,
+      "compliance_A": 0.15,
       "speed": "Slow",
       "range": "Auto",
-      "average": 3,
+      "average": 10,
       "sweep_profile": [
-        {"voltage": 0.0, "hold_s": 8.0}
+        {"voltage": 0.0, "hold_s": 10.0}
       ]
     }
   }

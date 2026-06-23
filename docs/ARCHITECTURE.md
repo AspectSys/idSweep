@@ -337,7 +337,7 @@ the spec it is handed; swapping configs swaps behavior without touching engine c
 | `switching_matrix.py` | `SwitchingMatrix707A` wraps the 707A driver (`apply_route`, `open_all`, `shutdown`); `normalize_matrix_config()` canonicalizes crosspoint strings. |
 | `parameter_matrix.py` | Reads/normalizes the Excel workbook into row dicts. |
 | `core/report.py` | `ReportWriter` turns the four measurement CSVs + `run_info.json` into the station's tab-separated `.txt` result with per-pin pass/fail bins and limits. |
-| `core/post_process.py` | SweepMe!-style post-processing script (standalone; not called by `sweep.py`/`run_all.py`). |
+| `ref/post_process.py` | SweepMe!-style post-processing script kept for reference (standalone; not called by `sweep.py`/`run_all.py`). |
 | `keithley4200.py`, `keithley590_LCR.py`, `keithley707a.py` | The actual SweepMe! instrument drivers (GPIB command protocols). |
 | `helper/*.py` | Standalone GPIB diagnostics (`ping_4200.py`, `deep_flush.py`, `bus_reset.py`, `test_4200_*.py`). Run directly. |
 

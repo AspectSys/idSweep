@@ -1,0 +1,49 @@
+{
+  "test_name": "Dark Current",
+  "excel_sheet": "DarkCurrent",
+  "instruments": {
+    "switch_matrix": "GPIB0::18::INSTR",
+    "smu_mainframe": "GPIB0::17::INSTR",
+    "matrix_settling_s": 0.3,
+    "workbook": "settings/ParameterMatrix_DF.xlsx"
+  },
+  "smus": {
+    "cathode_SMU1": {
+      "compliance_A": 0.15,
+      "speed": "Slow",
+      "range": "Limited 1 nA",
+      "average": 1,
+      "sweep_profile": [
+        {"voltage": -0.611, "hold_s": 0.0},
+        {"voltage": -0.67,   "hold_s": 0.0}
+      ]
+    },
+    "anode_SMU2": {
+      "compliance_A": 0.15,
+      "speed": "Slow",
+      "range": "Limited 1 nA",
+      "average": 1,
+      "sweep_profile": [
+        {"voltage": 0.0, "hold_s": 0.0}
+      ]
+    },
+    "guard_SMU3": {
+      "compliance_A": 0.15,
+      "speed": "Slow",
+      "range": "Auto",
+      "average": 1,
+      "sweep_profile": [
+        {"voltage": 0.0, "hold_s": 0.0}
+      ]
+    },
+    "group_SMU4": {
+      "compliance_A": 0.15,
+      "speed": "Slow",
+      "range": "Auto",
+      "average": 1,
+      "sweep_profile": [
+        {"voltage": 0.0, "hold_s": 10.0}
+      ]
+    }
+  }
+}

@@ -16,12 +16,12 @@
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
-        {"voltage": -0.02,  "hold_s": 0.0},
-        {"voltage": -0.035, "hold_s": 0.0}
+        {"voltage": -0.02,  "hold_s": 1.0},
+        {"voltage": -0.035, "hold_s": 1.0}
       ]
     },
     "anode_SMU2": {
-      "compliance_A": 0.1,
+      "compliance_A": 0.15,
       "speed": "Slow",
       "range": "Auto",
       "average": 1,
@@ -30,7 +30,7 @@
       ]
     },
     "guard_SMU3": {
-      "compliance_A": 0.1,
+      "compliance_A": 0.15,
       "speed": "Slow",
       "range": "Auto",
       "average": 1,
@@ -39,12 +39,12 @@
       ]
     },
     "group_SMU4": {
-      "compliance_A": 0.1,
+      "compliance_A": 0.15,
       "speed": "Slow",
       "range": "Auto",
       "average": 1,
       "sweep_profile": [
-        {"voltage": 0.0, "hold_s": 0.0}
+        {"voltage": 0.0, "hold_s": 0}
       ]
     }
   }
