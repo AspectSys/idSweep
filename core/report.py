@@ -62,8 +62,8 @@ class ReportWriter:
                 lines += self._entry(1, 1, "Guard Leakage 0V [nA]",   gl_0v, _LIMITS["guard_0v"])
                 lines += self._entry(1, 2, "Guard Leakage 2.5V [nA]", gl_2v, _LIMITS["guard_2v"])
 
-            dc_rev  = float(dc0.at[pin, "Cathode Current A"])
-            dc_fwd  = float(dc1.at[pin, "Cathode Current A"])
+            dc_rev  = float(dc0.at[pin, "Anode Current A"])
+            dc_fwd  = float(dc1.at[pin, "Anode Current A"])
             rs_val  = float(rs_idx.at[pin,  "Rs Ohm"])        if pin in rs_idx.index  else float("nan")
             cap_val = float(cap_idx.at[pin, "Capacitance F"])  if pin in cap_idx.index else float("nan")
 

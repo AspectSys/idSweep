@@ -9,7 +9,7 @@
   },
   "smus": {
     "cathode_SMU1": {
-      "compliance_A": 0.15,
+      "compliance_A": 0.2,
       "speed": "Slow",
       "range": "Auto",
       "average": 1,
@@ -19,7 +19,7 @@
       ]
     },
     "guard_SMU3": {
-      "compliance_A": 0.15,
+      "compliance_A": 0.2,
       "speed": "Slow",
       "range": "Auto",
       "average": 10,

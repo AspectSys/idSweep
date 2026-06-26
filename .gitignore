@@ -10,6 +10,8 @@ __pycache__/
 venv/
 env/
 
+results/
+
 # uv
 .python-version
 .uv/

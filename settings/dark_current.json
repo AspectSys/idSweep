@@ -9,7 +9,7 @@
   },
   "smus": {
     "cathode_SMU1": {
-      "compliance_A": 0.15,
+      "compliance_A": 0.2,
       "speed": "Slow",
       "range": "Limited 1 nA",
       "average": 1,
